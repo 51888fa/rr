@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WanderWorld – Explore the Globe</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #1a6b5a;
+      --primary-dark: #124d41;
+      --accent: #f0a500;
+      --text: #1e1e1e;
+      --text-muted: #555;
+      --bg: #f7f7f5;
+      --white: #ffffff;
+      --card-bg: #ffffff;
+      --border: #e0e0e0;
+      --radius: 14px;
+      --shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; color: var(--text); background: var(--bg); line-height: 1.6; }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; width: 100%; object-fit: cover; }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 5%;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 68px;
+    }
+    .nav-logo { font-size: 1.5rem; font-weight: 700; color: var(--primary); letter-spacing: -0.5px; }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 2rem; font-size: 0.95rem; font-weight: 500; }
+    .nav-links a:hover { color: var(--primary); }
+    .nav-cta {
+      background: var(--primary); color: var(--white);
+      padding: 0.55rem 1.4rem; border-radius: 50px;
+      font-size: 0.9rem; font-weight: 600;
+      transition: background 0.2s;
+    }
+    .nav-cta:hover { background: var(--primary-dark); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      min-height: 92vh;
+      background: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80') center/cover no-repeat;
+      display: flex; align-items: center;
+    }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(10,40,30,0.72) 0%, rgba(0,0,0,0.28) 100%);
+    }
+    .hero-content {
+      position: relative; z-index: 1;
+      max-width: 680px; margin-left: 8%;
+      color: var(--white);
+    }
+    .hero-badge {
+      display: inline-block;
+      background: var(--accent); color: #111;
+      font-size: 0.78rem; font-weight: 700; letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 0.3rem 0.9rem; border-radius: 50px;
+      margin-bottom: 1.2rem;
+    }
+    .hero-content h1 {
+      font-size: clamp(2.4rem, 5vw, 4rem);
+      font-weight: 800; line-height: 1.15;
+      margin-bottom: 1.2rem;
+    }
+    .hero-content p {
+      font-size: 1.1rem; opacity: 0.88;
+      margin-bottom: 2rem; max-width: 520px;
+    }
+    .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn-primary {
+      background: var(--accent); color: #111;
+      padding: 0.85rem 2rem; border-radius: 50px;
+      font-weight: 700; font-size: 1rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(240,165,0,0.4); }
+    .btn-outline {
+      border: 2px solid rgba(255,255,255,0.7); color: var(--white);
+      padding: 0.83rem 2rem; border-radius: 50px;
+      font-weight: 600; font-size: 1rem;
+      transition: background 0.2s;
+    }
+    .btn-outline:hover { background: rgba(255,255,255,0.15); }
+
+    /* search bar */
+    .search-bar {
+      position: absolute; bottom: -30px; left: 50%;
+      transform: translateX(-50%);
+      width: 90%; max-width: 860px;
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.14);
+      display: flex; align-items: center;
+      padding: 0.6rem 1rem;
+      gap: 0.5rem;
+      z-index: 10;
+    }
+    .search-field {
+      flex: 1;
+      display: flex; flex-direction: column;
+      padding: 0.4rem 0.8rem;
+      border-right: 1px solid var(--border);
+    }
+    .search-field:last-of-type { border-right: none; }
+    .search-field label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .search-field input, .search-field select {
+      border: none; outline: none; font-size: 0.95rem;
+      color: var(--text); background: transparent; font-family: inherit;
+    }
+    .search-btn {
+      background: var(--primary); color: var(--white);
+      border: none; cursor: pointer;
+      padding: 0.85rem 1.8rem; border-radius: 12px;
+      font-size: 0.95rem; font-weight: 700;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+    .search-btn:hover { background: var(--primary-dark); }
+
+    /* ── SECTION COMMONS ── */
+    section { padding: 6rem 5%; }
+    .section-header { text-align: center; margin-bottom: 3rem; }
+    .section-tag {
+      display: inline-block; font-size: 0.78rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1.2px;
+      color: var(--primary); background: rgba(26,107,90,0.1);
+      padding: 0.3rem 0.9rem; border-radius: 50px;
+      margin-bottom: 0.8rem;
+    }
+    .section-header h2 { font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 800; line-height: 1.2; }
+    .section-header p { color: var(--text-muted); font-size: 1rem; max-width: 540px; margin: 0.8rem auto 0; }
+
+    /* ── STATS BAR ── */
+    .stats { background: var(--primary); padding-top: 4rem; }
+    .stats-grid {
+      display: flex; justify-content: center; flex-wrap: wrap; gap: 0;
+    }
+    .stat-item {
+      flex: 1; min-width: 160px; text-align: center;
+      color: var(--white); padding: 2rem 1.5rem;
+      border-right: 1px solid rgba(255,255,255,0.15);
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num { font-size: 2.6rem; font-weight: 800; line-height: 1; }
+    .stat-num span { color: var(--accent); }
+    .stat-label { font-size: 0.88rem; opacity: 0.75; margin-top: 0.4rem; }
+
+    /* ── DESTINATIONS ── */
+    .destinations { background: var(--bg); padding-top: 5rem; }
+    .dest-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .dest-card {
+      border-radius: var(--radius);
+      overflow: hidden;
+      position: relative;
+      height: 340px;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+    .dest-card:hover { transform: translateY(-6px); }
+    .dest-card img { height: 100%; transition: transform 0.5s; }
+    .dest-card:hover img { transform: scale(1.06); }
+    .dest-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 55%);
+    }
+    .dest-info {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 1.2rem 1.4rem; color: var(--white);
+    }
+    .dest-info h3 { font-size: 1.25rem; font-weight: 700; }
+    .dest-info p { font-size: 0.82rem; opacity: 0.8; margin-top: 0.25rem; }
+    .dest-badge {
+      position: absolute; top: 14px; left: 14px;
+      background: var(--accent); color: #111;
+      font-size: 0.72rem; font-weight: 700;
+      padding: 0.25rem 0.7rem; border-radius: 50px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .dest-price {
+      position: absolute; top: 14px; right: 14px;
+      background: rgba(0,0,0,0.55); color: var(--white);
+      font-size: 0.82rem; font-weight: 700;
+      padding: 0.25rem 0.7rem; border-radius: 50px;
+    }
+
+    /* ── PACKAGES ── */
+    .packages { background: #fff; }
+    .pkg-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    .pkg-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: transform 0.3s;
+    }
+    .pkg-card:hover { transform: translateY(-5px); }
+    .pkg-img { height: 210px; }
+    .pkg-body { padding: 1.4rem; }
+    .pkg-meta { display: flex; gap: 1rem; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.7rem; }
+    .pkg-meta span { display: flex; align-items: center; gap: 0.3rem; }
+    .pkg-body h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .pkg-body p { font-size: 0.88rem; color: var(--text-muted); line-height: 1.55; }
+    .pkg-footer {
+      padding: 1rem 1.4rem;
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .pkg-price { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
+    .pkg-price small { font-size: 0.8rem; font-weight: 400; color: var(--text-muted); }
+    .pkg-btn {
+      background: var(--primary); color: var(--white);
+      padding: 0.6rem 1.3rem; border-radius: 50px;
+      font-size: 0.88rem; font-weight: 600;
+      border: none; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .pkg-btn:hover { background: var(--primary-dark); }
+    .featured-tag {
+      background: var(--accent); color: #111;
+      font-size: 0.72rem; font-weight: 700;
+      padding: 0.25rem 0.7rem; border-radius: 50px 50px 0 0;
+      text-align: center; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    /* ── WHY US ── */
+    .why { background: var(--bg); }
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 2rem;
+    }
+    .why-card { text-align: center; padding: 2rem 1.5rem; }
+    .why-icon {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(26,107,90,0.12);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.2rem;
+      font-size: 1.8rem;
+    }
+    .why-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .why-card p { font-size: 0.88rem; color: var(--text-muted); }
+
+    /* ── TESTIMONIALS ── */
+    .testimonials { background: #fff; }
+    .testi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .testi-card {
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: 1.8rem;
+    }
+    .stars { color: var(--accent); font-size: 1rem; margin-bottom: 1rem; }
+    .testi-text { font-size: 0.92rem; color: var(--text); line-height: 1.65; margin-bottom: 1.4rem; font-style: italic; }
+    .testi-author { display: flex; align-items: center; gap: 0.8rem; }
+    .author-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      object-fit: cover; flex-shrink: 0;
+    }
+    .author-name { font-weight: 700; font-size: 0.92rem; }
+    .author-trip { font-size: 0.78rem; color: var(--text-muted); }
+
+    /* ── BLOG ── */
+    .blog { background: var(--bg); }
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    .blog-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: transform 0.3s;
+    }
+    .blog-card:hover { transform: translateY(-5px); }
+    .blog-img { height: 200px; }
+    .blog-body { padding: 1.4rem; }
+    .blog-cat {
+      font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.8px; color: var(--primary); margin-bottom: 0.6rem;
+    }
+    .blog-body h3 { font-size: 1.05rem; font-weight: 700; line-height: 1.4; margin-bottom: 0.6rem; }
+    .blog-body p { font-size: 0.86rem; color: var(--text-muted); line-height: 1.55; }
+    .blog-footer {
+      padding: 0.9rem 1.4rem;
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between;
+      font-size: 0.8rem; color: var(--text-muted);
+    }
+    .read-more { color: var(--primary); font-weight: 600; }
+
+    /* ── NEWSLETTER ── */
+    .newsletter {
+      background: var(--primary);
+      padding: 5rem 5%;
+      text-align: center;
+      color: var(--white);
+    }
+    .newsletter h2 { font-size: 2rem; font-weight: 800; margin-bottom: 0.8rem; }
+    .newsletter p { opacity: 0.82; max-width: 480px; margin: 0 auto 2rem; }
+    .nl-form { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
+    .nl-form input {
+      padding: 0.85rem 1.4rem;
+      border: none; border-radius: 50px;
+      font-size: 0.95rem; width: 300px;
+      outline: none;
+    }
+    .nl-form button {
+      background: var(--accent); color: #111;
+      border: none; cursor: pointer;
+      padding: 0.85rem 2rem; border-radius: 50px;
+      font-size: 0.95rem; font-weight: 700;
+      transition: transform 0.2s;
+    }
+    .nl-form button:hover { transform: translateY(-2px); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #0f1c1a;
+      color: rgba(255,255,255,0.75);
+      padding: 4rem 5% 2rem;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 3rem;
+      margin-bottom: 3rem;
+    }
+    .footer-brand .nav-logo { color: var(--white); margin-bottom: 1rem; font-size: 1.4rem; }
+    .footer-brand p { font-size: 0.88rem; line-height: 1.6; max-width: 260px; }
+    .footer-col h4 { color: var(--white); font-size: 0.92rem; font-weight: 700; margin-bottom: 1.2rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .footer-col ul { list-style: none; }
+    .footer-col li { margin-bottom: 0.7rem; }
+    .footer-col a { font-size: 0.88rem; transition: color 0.2s; }
+    .footer-col a:hover { color: var(--white); }
+    .socials { display: flex; gap: 0.8rem; margin-top: 1.2rem; }
+    .social-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; transition: background 0.2s;
+    }
+    .social-btn:hover { background: var(--primary); }
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 1.5rem;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.82rem;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .nav-links, .nav-cta { display: none; }
+      .hero-content { margin-left: 5%; }
+      .search-bar { flex-direction: column; position: static; transform: none; margin: 2rem 5%; width: auto; }
+      .search-field { border-right: none; border-bottom: 1px solid var(--border); }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .stats-grid { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Wander<span>World</span></div>
+  <div class="nav-links">
+    <a href="#destinations">Destinations</a>
+    <a href="#packages">Packages</a>
+    <a href="#blog">Blog</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <a href="#packages" class="nav-cta">Book Now</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-badge">&#9733; #1 Travel Platform 2026</div>
+    <h1>Life is Short.<br>Explore More.</h1>
+    <p>From hidden mountain villages to sun-soaked beaches — we craft unforgettable journeys tailored just for you.</p>
+    <div class="hero-btns">
+      <a href="#destinations" class="btn-primary">Explore Destinations</a>
+      <a href="#packages" class="btn-outline">View Packages</a>
+    </div>
+  </div>
+
+  <!-- search bar -->
+  <div class="search-bar">
+    <div class="search-field">
+      <label>Destination</label>
+      <input type="text" placeholder="Where do you want to go?" />
+    </div>
+    <div class="search-field">
+      <label>Check-In</label>
+      <input type="date" />
+    </div>
+    <div class="search-field">
+      <label>Travelers</label>
+      <select>
+        <option>1 Person</option>
+        <option>2 People</option>
+        <option>3–5 People</option>
+        <option>6+ People</option>
+      </select>
+    </div>
+    <button class="search-btn">Search</button>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats">
+  <div class="stats-grid">
+    <div class="stat-item">
+      <div class="stat-num">120<span>+</span></div>
+      <div class="stat-label">Countries Covered</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">48<span>K</span></div>
+      <div class="stat-label">Happy Travelers</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">960<span>+</span></div>
+      <div class="stat-label">Tour Packages</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">4.9<span>★</span></div>
+      <div class="stat-label">Average Rating</div>
+    </div>
+  </div>
+</section>
+
+<!-- DESTINATIONS -->
+<section class="destinations" id="destinations">
+  <div class="section-header">
+    <div class="section-tag">Top Picks</div>
+    <h2>Popular Destinations</h2>
+    <p>Hand-picked experiences across the globe, waiting for you to explore.</p>
+  </div>
+  <div class="dest-grid">
+    <div class="dest-card">
+      <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80" alt="Maldives" />
+      <div class="dest-overlay"></div>
+      <div class="dest-badge">Trending</div>
+      <div class="dest-price">From $1,299</div>
+      <div class="dest-info">
+        <h3>Maldives</h3>
+        <p>Crystal lagoons &amp; overwater bungalows</p>
+      </div>
+    </div>
+    <div class="dest-card">
+      <img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=600&q=80" alt="Kyoto, Japan" />
+      <div class="dest-overlay"></div>
+      <div class="dest-badge">Cultural</div>
+      <div class="dest-price">From $980</div>
+      <div class="dest-info">
+        <h3>Kyoto, Japan</h3>
+        <p>Ancient temples, cherry blossoms &amp; zen gardens</p>
+      </div>
+    </div>
+    <div class="dest-card">
+      <img src="https://images.unsplash.com/photo-1539020140153-e479b8c22e70?w=600&q=80" alt="Santorini" />
+      <div class="dest-overlay"></div>
+      <div class="dest-badge">Romantic</div>
+      <div class="dest-price">From $1,150</div>
+      <div class="dest-info">
+        <h3>Santorini, Greece</h3>
+        <p>Iconic sunsets &amp; whitewashed villages</p>
+      </div>
+    </div>
+    <div class="dest-card">
+      <img src="https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&q=80" alt="Patagonia" />
+      <div class="dest-overlay"></div>
+      <div class="dest-badge">Adventure</div>
+      <div class="dest-price">From $2,100</div>
+      <div class="dest-info">
+        <h3>Patagonia</h3>
+        <p>Raw wilderness &amp; dramatic landscapes</p>
+      </div>
+    </div>
+    <div class="dest-card">
+      <img src="https://images.unsplash.com/photo-1568049200392-7b4e682fae45?w=600&q=80" alt="Bali" />
+      <div class="dest-overlay"></div>
+      <div class="dest-badge">Best Value</div>
+      <div class="dest-price">From $740</div>
+      <div class="dest-info">
+        <h3>Bali, Indonesia</h3>
+        <p>Lush rice terraces, temples &amp; surf breaks</p>
+      </div>
+    </div>
+    <div class="dest-card">
+      <img src="https://images.unsplash.com/photo-1518098268026-4e89f1a2cd8e?w=600&q=80" alt="Safari" />
+      <div class="dest-overlay"></div>
+      <div class="dest-badge">Wildlife</div>
+      <div class="dest-price">From $3,200</div>
+      <div class="dest-info">
+        <h3>Kenya Safari</h3>
+        <p>The Great Migration &amp; open savanna</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PACKAGES -->
+<section class="packages" id="packages">
+  <div class="section-header">
+    <div class="section-tag">Our Offers</div>
+    <h2>Curated Travel Packages</h2>
+    <p>All-inclusive packages designed to give you the most memorable experience possible.</p>
+  </div>
+  <div class="pkg-grid">
+    <div class="pkg-card">
+      <div class="pkg-img">
+        <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&q=80" alt="Island Escape" />
+      </div>
+      <div class="pkg-body">
+        <div class="pkg-meta">
+          <span>&#128197; 7 Days</span>
+          <span>&#128101; Up to 6</span>
+          <span>&#9733; 4.9 (312)</span>
+        </div>
+        <h3>Maldives Island Escape</h3>
+        <p>Snorkel pristine reefs, relax in overwater villas, and feast on fresh seafood under the stars.</p>
+      </div>
+      <div class="pkg-footer">
+        <div class="pkg-price">$1,299 <small>/person</small></div>
+        <button class="pkg-btn">Book Now</button>
+      </div>
+    </div>
+
+    <div class="pkg-card" style="border-color: var(--accent); border-width: 2px; border-style: solid;">
+      <div class="featured-tag">&#9733; Most Popular</div>
+      <div class="pkg-img">
+        <img src="https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600&q=80" alt="Japan Highlights" />
+      </div>
+      <div class="pkg-body">
+        <div class="pkg-meta">
+          <span>&#128197; 10 Days</span>
+          <span>&#128101; Up to 8</span>
+          <span>&#9733; 5.0 (204)</span>
+        </div>
+        <h3>Japan Cultural Highlights</h3>
+        <p>Walk through bamboo forests in Arashiyama, taste ramen in Osaka, and witness Mount Fuji at dawn.</p>
+      </div>
+      <div class="pkg-footer">
+        <div class="pkg-price">$2,450 <small>/person</small></div>
+        <button class="pkg-btn">Book Now</button>
+      </div>
+    </div>
+
+    <div class="pkg-card">
+      <div class="pkg-img">
+        <img src="https://images.unsplash.com/photo-1504214208698-ea1916a2195a?w=600&q=80" alt="Safari" />
+      </div>
+      <div class="pkg-body">
+        <div class="pkg-meta">
+          <span>&#128197; 8 Days</span>
+          <span>&#128101; Up to 4</span>
+          <span>&#9733; 4.8 (178)</span>
+        </div>
+        <h3>Kenya Wildlife Safari</h3>
+        <p>Game drives at Maasai Mara, hot-air balloon rides over the savanna, and authentic bush camps.</p>
+      </div>
+      <div class="pkg-footer">
+        <div class="pkg-price">$3,200 <small>/person</small></div>
+        <button class="pkg-btn">Book Now</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY US -->
+<section class="why">
+  <div class="section-header">
+    <div class="section-tag">Why WanderWorld</div>
+    <h2>Travel With Confidence</h2>
+    <p>We take care of every detail so you can focus on making memories.</p>
+  </div>
+  <div class="why-grid">
+    <div class="why-card">
+      <div class="why-icon">&#127759;</div>
+      <h3>Global Network</h3>
+      <p>120+ countries, 500+ local guides who know every hidden gem.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">&#128274;</div>
+      <h3>Safe &amp; Secure</h3>
+      <p>24/7 emergency support and comprehensive travel insurance included.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">&#128176;</div>
+      <h3>Best Price Guarantee</h3>
+      <p>Find a lower price elsewhere and we'll match it — no questions asked.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">&#10024;</div>
+      <h3>Tailor-Made Trips</h3>
+      <p>Every itinerary is crafted to match your style, pace, and budget.</p>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <div class="section-header">
+    <div class="section-tag">Traveler Stories</div>
+    <h2>What Our Guests Say</h2>
+  </div>
+  <div class="testi-grid">
+    <div class="testi-card">
+      <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+      <p class="testi-text">"WanderWorld turned our honeymoon into a fairy tale. The Maldives package was beyond anything we imagined — every single detail was perfect."</p>
+      <div class="testi-author">
+        <img class="author-avatar" src="https://randomuser.me/api/portraits/women/44.jpg" alt="Sophie" />
+        <div>
+          <div class="author-name">Sophie &amp; James L.</div>
+          <div class="author-trip">Maldives Island Escape</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+      <p class="testi-text">"I've traveled to over 30 countries and WanderWorld's Japan tour is by far the best-organized trip I've ever taken. Our guide Yuki was incredible!"</p>
+      <div class="testi-author">
+        <img class="author-avatar" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Marcus" />
+        <div>
+          <div class="author-name">Marcus T.</div>
+          <div class="author-trip">Japan Cultural Highlights</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+      <p class="testi-text">"The Kenya safari was a bucket-list experience I'll tell my grandkids about. Watching the Great Migration was absolutely breathtaking."</p>
+      <div class="testi-author">
+        <img class="author-avatar" src="https://randomuser.me/api/portraits/women/68.jpg" alt="Rachel" />
+        <div>
+          <div class="author-name">Rachel O.</div>
+          <div class="author-trip">Kenya Wildlife Safari</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BLOG -->
+<section class="blog" id="blog">
+  <div class="section-header">
+    <div class="section-tag">Travel Tips</div>
+    <h2>From Our Travel Journal</h2>
+    <p>Inspiration, guides, and insider tips from our expert explorers.</p>
+  </div>
+  <div class="blog-grid">
+    <div class="blog-card">
+      <div class="blog-img">
+        <img src="https://images.unsplash.com/photo-1465778893808-9b3a1b7ebe92?w=600&q=80" alt="Packing" />
+      </div>
+      <div class="blog-body">
+        <div class="blog-cat">Packing Tips</div>
+        <h3>The Ultimate Carry-On Packing List for Any Climate</h3>
+        <p>Pack light, pack smart — our tested checklist for carry-on only travel across seasons.</p>
+      </div>
+      <div class="blog-footer">
+        <span>June 12, 2026</span>
+        <a href="#" class="read-more">Read More &rarr;</a>
+      </div>
+    </div>
+    <div class="blog-card">
+      <div class="blog-img">
+        <img src="https://images.unsplash.com/photo-1545579133-99bb5ad189be?w=600&q=80" alt="Solo travel" />
+      </div>
+      <div class="blog-body">
+        <div class="blog-cat">Solo Travel</div>
+        <h3>10 Reasons Southeast Asia Is Perfect for First-Time Solo Travelers</h3>
+        <p>Friendly locals, great food, low cost and stunning landscapes — here's why SE Asia should be your first solo adventure.</p>
+      </div>
+      <div class="blog-footer">
+        <span>June 5, 2026</span>
+        <a href="#" class="read-more">Read More &rarr;</a>
+      </div>
+    </div>
+    <div class="blog-card">
+      <div class="blog-img">
+        <img src="https://images.unsplash.com/photo-1494783367193-149034c05e8f?w=600&q=80" alt="Budget travel" />
+      </div>
+      <div class="blog-body">
+        <div class="blog-cat">Budget Travel</div>
+        <h3>How to Visit Europe on $50 a Day (Yes, Really)</h3>
+        <p>Hostels, free museums, slow travel and smart booking — a practical guide to experiencing Europe without breaking the bank.</p>
+      </div>
+      <div class="blog-footer">
+        <span>May 29, 2026</span>
+        <a href="#" class="read-more">Read More &rarr;</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section class="newsletter" id="contact">
+  <h2>Get Exclusive Travel Deals</h2>
+  <p>Join 30,000+ subscribers and get handpicked destinations, insider tips, and early-bird offers straight to your inbox.</p>
+  <div class="nl-form">
+    <input type="email" placeholder="Enter your email address" />
+    <button type="button">Subscribe</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="nav-logo">Wander<span style="color:var(--accent)">World</span></div>
+      <p>Making the world smaller, one adventure at a time. Trusted by 48,000+ travelers worldwide.</p>
+      <div class="socials">
+        <a class="social-btn" href="#" aria-label="Instagram">&#128247;</a>
+        <a class="social-btn" href="#" aria-label="Twitter">&#127890;</a>
+        <a class="social-btn" href="#" aria-label="Facebook">&#128386;</a>
+        <a class="social-btn" href="#" aria-label="YouTube">&#128250;</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Destinations</h4>
+      <ul>
+        <li><a href="#">Asia</a></li>
+        <li><a href="#">Europe</a></li>
+        <li><a href="#">Americas</a></li>
+        <li><a href="#">Africa</a></li>
+        <li><a href="#">Oceania</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#">About Us</a></li>
+        <li><a href="#">Our Guides</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Press</a></li>
+        <li><a href="#">Blog</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <ul>
+        <li><a href="#">FAQ</a></li>
+        <li><a href="#">Booking Policy</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Contact Us</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 WanderWorld. All rights reserved.</span>
+    <span>Made with &#10084; for explorers everywhere</span>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    });
+  });
+
+  const searchBtn = document.querySelector('.search-btn');
+  if (searchBtn) {
+    searchBtn.addEventListener('click', () => {
+      const input = document.querySelector('.search-bar input[type="text"]');
+      if (input && input.value.trim()) {
+        const dest = document.querySelector('#destinations');
+        if (dest) dest.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  }
+
+  const nlBtn = document.querySelector('.nl-form button');
+  if (nlBtn) {
+    nlBtn.addEventListener('click', () => {
+      const input = document.querySelector('.nl-form input');
+      if (input && input.value.includes('@')) {
+        nlBtn.textContent = '✓ Subscribed!';
+        nlBtn.style.background = '#2e7d32';
+        input.value = '';
+        setTimeout(() => { nlBtn.textContent = 'Subscribe'; nlBtn.style.background = ''; }, 3000);
+      }
+    });
+  }
+</script>
+
+</body>
+</html>
